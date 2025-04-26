@@ -1,0 +1,22 @@
+.sidebar-drawer {
+  direction: rtl;
+}
+
+.sidebar-header {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+}
+
+/* Override MUI styles for RTL support */
+.MuiListItemIcon-root {
+  min-width: 40px !important;
+  margin-left: 8px !important;
+  margin-right: 0 !important;
+}
+
+.MuiListItemText-root {
+  text-align: right;
+}

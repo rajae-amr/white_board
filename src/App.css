@@ -1,0 +1,251 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: 'Roboto', 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: 'Cairo', sans-serif;
+  background-color: var(--bg-light);
+  direction: rtl;
+}
+
+/* حاوية التطبيق الرئيسية */
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  background-color: var(--bg-light);
+  flex-direction: row-reverse; /* لدعم اتجاه RTL وإظهار الشريط الجانبي على اليمين */
+}
+
+.content-wrapper {
+  display: flex;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* الشريط الجانبي */
+.sidebar-panel {
+  width: 280px;
+  background-color: var(--bg-white);
+  border-left: 1px solid rgba(0, 0, 0, 0.08); /* تغيير من border-right إلى border-left لأن الشريط على اليمين */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-light);
+  margin: var(--spacing-md) var(--spacing-md) var(--spacing-md) 0; /* تغيير هوامش الشريط الجانبي */
+  border-radius: var(--border-radius-md);
+  transition: transform 0.3s ease;
+  z-index: 5;
+}
+
+/* منطقة السبورة */
+.whiteboard-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: var(--bg-white);
+  box-shadow: var(--shadow-light);
+  border-radius: var(--border-radius-md);
+  margin: var(--spacing-md);
+  overflow: hidden;
+}
+
+/* حاوية أدوات الرياضيات */
+.mathtools-container {
+  width: 700px; /* زيادة العرض الافتراضي من 500px إلى 700px */
+  height: 100%;
+  border-right: 1px solid #ddd;
+  overflow: hidden;
+  background-color: var(--paper-bg, #fff);
+  z-index: 100;
+  transition: background-color 0.3s ease, border-color 0.3s ease, width 0.3s ease;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+}
+
+/* أزرار شريط الأدوات */
+.toolbar-button {
+  background-color: var(--bg-light);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  min-height: 42px;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
+}
+
+.toolbar-button:hover {
+  background-color: rgba(25, 118, 210, 0.08);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-light);
+}
+
+.toolbar-button.active {
+  background-color: var(--primary-light);
+  color: white;
+  box-shadow: var(--shadow-light);
+}
+
+/* أزرار التحكم في التخطيط */
+.layout-controls {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+}
+
+.layout-controls .toggle-button {
+  width: 24px;
+  height: 44px;
+  border: none;
+  background-color: var(--primary-color, #1976d2);
+  color: var(--primary-text, white);
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0.9;
+}
+
+.layout-controls .toggle-button:hover {
+  width: 28px;
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+.layout-controls .toggle-button:first-child {
+  right: 0;
+  position: absolute;
+}
+
+.layout-controls .toggle-button:last-child {
+  left: 0;
+  position: absolute;
+}
+
+/* Override Material UI styles for RTL support */
+.MuiDrawer-paper {
+  position: static !important;
+}
+
+.sidebar-drawer {
+  height: 100%;
+}
+
+.MuiDrawer-root.sidebar-drawer .MuiDrawer-paper {
+  position: relative !important;
+  height: 100%;
+}
+
+/* RTL Support */
+html[dir="rtl"] .MuiIconButton-root {
+  padding: 12px;
+}
+
+/* Additional RTL Support */
+.content-wrapper {
+  display: flex;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  flex-direction: row-reverse; /* لدعم اتجاه RTL */
+}
+
+/* For Arabic text */
+@font-face {
+  font-family: 'Cairo';
+  font-style: normal;
+  font-weight: 400;
+  src: url('https://fonts.gstatic.com/s/cairo/v20/SLXVc1nY6HkvangtZmpcWmhzfH5lWWgcQyyS4J0.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE80-FEFC;
+}
+
+/* Additional font weights for Cairo font for better typography */
+@font-face {
+  font-family: 'Cairo';
+  font-style: normal;
+  font-weight: 700;
+  src: url('https://fonts.gstatic.com/s/cairo/v20/SLXVc1nY6HkvangtZmpcWmhzfH5lvm8cQyyS4J0.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE80-FEFC;
+}
+
+/* Add Cairo font for Arabic content */
+.MuiTypography-root {
+  font-family: 'Cairo', 'Roboto', 'Arial', sans-serif;
+}
+
+/* Make all buttons with Arabic text use Cairo font */
+.MuiButton-root {
+  font-family: 'Cairo', 'Roboto', 'Arial', sans-serif;
+}
+
+/* Apply RTL to all MUI components */
+.MuiPaper-root,
+.MuiList-root,
+.MuiListItem-root,
+.MuiAccordion-root,
+.MuiMenu-root,
+.MuiPopover-root,
+.MuiDrawer-root,
+.MuiDialog-root {
+  direction: rtl;
+}
+
+/* Fix for RTL direction in inputs */
+.MuiInputBase-root,
+.MuiOutlinedInput-root,
+.MuiInputLabel-root {
+  text-align: right;
+}
+
+/* Additional styling for RTL layout */
+.MuiTabs-root {
+  direction: rtl;
+}
+
+/* لوحة أدوات الرياضيات */
+.math-tools-panel {
+  z-index: 1000;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+/* تحسين اتجاه عناصر واجهة المستخدم */
+.toolbar-container {
+  direction: rtl;
+}
+
+/* تعديل ظهور عناصر LaTeX */
+.katex-display {
+  direction: ltr !important;
+  text-align: center !important;
+}

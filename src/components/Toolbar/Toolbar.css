@@ -1,0 +1,90 @@
+.toolbar-container {
+  width: fit-content;
+  margin: 10px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.toolbar {
+  background: linear-gradient(145deg, #ffffff, #f5f5f5);
+  padding: 12px 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  align-items: center;
+  border-radius: 8px 8px 0 0;
+  z-index: 10;
+  position: relative;
+}
+
+.drawing-toolbar {
+  display: flex;
+  flex-direction: row;
+  padding: 5px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toolbar-section {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-right: 16px;
+  flex-wrap: wrap;
+  position: relative;
+  padding: 4px 0;
+}
+
+.color-thickness-controls {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.color-picker-container {
+  position: relative;
+}
+
+.color-picker-popover {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  z-index: 1000;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+}
+
+.drawing-to.color-picker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 4px;
+  background-color: rgba(245, 245, 245, 0.5);
+  border-radius: 8px;
+}
+
+.toolbar-.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.thickness-slider {
+  width: 120px;
+  padding: 0 8px;
+}

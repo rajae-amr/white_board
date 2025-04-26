@@ -1,0 +1,183 @@
+.shape-viewer-container {
+    width: 100%;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1000px;
+    margin-bottom: 20px;
+  }
+  
+  .shape-3d {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(20deg) rotateY(30deg);
+    animation: rotate 15s infinite linear;
+  }
+  
+  @keyframes rotate {
+    from { transform: rotateX(20deg) rotateY(0); }
+    to { transform: rotateX(20deg) rotateY(360deg); }
+  }
+  
+  .shape-shadow {
+    width: 120px;
+    height: 30px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 50%;
+    position: absolute;
+    bottom: -15px;
+    filter: blur(10px);
+  }
+  
+  .face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 2px solid #3f51b5;
+    background-color: rgba(63, 81, 181, 0.1);
+    backface-visibility: visible;
+  }
+  
+  /* شكل المكعب */
+  .shape-cube .front {
+    transform: translateZ(75px);
+  }
+  .shape-cube .back {
+    transform: rotateY(180deg) translateZ(75px);
+  }
+  .shape-cube .right {
+    transform: rotateY(90deg) translateZ(75px);
+  }
+  .shape-cube .left {
+    transform: rotateY(-90deg) translateZ(75px);
+  }
+  .shape-cube .top {
+    transform: rotateX(90deg) translateZ(75px);
+  }
+  .shape-cube .bottom {
+    transform: rotateX(-90deg) translateZ(75px);
+  }
+  
+  /* شكل الهرم */
+  .shape-pyramid .front,
+  .shape-pyramid .right,
+  .shape-pyramid .left {
+    width: 0;
+    height: 0;
+    border-left: 75px solid transparent;
+    border-right: 75px solid transparent;
+    border-bottom: 130px solid rgba(233, 30, 99, 0.1);
+    background: none;
+  }
+  
+  .shape-pyramid .front {
+    transform: translateZ(0) rotateX(30deg);
+  }
+  .shape-pyramid .right {
+    transform: rotateY(90deg) translateZ(0) rotateX(30deg);
+  }
+  .shape-pyramid .left {
+    transform: rotateY(-90deg) translateZ(0) rotateX(30deg);
+  }
+  .shape-pyramid .bottom {
+    width: 150px;
+    height: 150px;
+    transform: rotateX(-90deg) translateZ(0);
+    background-color: rgba(233, 30, 99, 0.1);
+  }
+  
+  /* شكل الكرة */
+  .shape-sphere {
+    border-radius: 50%;
+    background: radial-gradient(circle at 50px 50px, #8BC34A, #2196F3);
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.3);
+  }
+  .shape-sphere .face {
+    display: none;
+  }
+  
+  /* المخروط */
+  .shape-cone {
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    background: linear-gradient(to bottom, #FF9800, #F44336);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+  .shape-cone .face {
+    display: none;
+  }
+  
+  /* الأسطوانة */
+  .shape-cylinder {
+    border-radius: 75px / 20px;
+    background: linear-gradient(to bottom, #4CAF50, #009688);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+  .shape-cylinder .face {
+    display: none;
+  }
+  
+  /* المنشور */
+  .shape-prism .front {
+    transform: translateZ(35px);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  }
+  .shape-prism .back {
+    transform: rotateY(180deg) translateZ(35px);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  }
+  .shape-prism .right {
+    transform: rotateY(90deg) translateZ(75px);
+    height: 70px;
+  }
+  .shape-prism .left {
+    transform: rotateY(-90deg) translateZ(75px);
+    height: 70px;
+  }
+  .shape-prism .bottom {
+    transform: rotateX(-90deg) translateZ(70px);
+  }
+
+  /* الحلقة */
+  .shape-torus {
+    border-radius: 50%;
+    background: radial-gradient(circle at center, #03A9F4, #E91E63);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+    position: relative;
+  }
+  .shape-torus:before {
+    content: '';
+    position: absolute;
+    top: 25%;
+    left: 25%;
+    width: 50%;
+    height: 50%;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+  .shape-torus .face {
+    display: none;
+  }
+
+  /* ثماني الأوجه */
+  .shape-octahedron {
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    background: linear-gradient(45deg, #9C27B0, #673AB7);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+  .shape-octahedron .face {
+    display: none;
+  }
+
+  /* اثني عشري الأوجه */
+  .shape-dodecahedron {
+    border-radius: 20%;
+    background: radial-gradient(circle at center, #FFEB3B, #FF9800);
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
+  }
+  .shape-dodecahedron .face {
+    display: none;
+  }

@@ -1,0 +1,95 @@
+/* السماح لحاسبة Desmos بالظهور بشكلها الافتراضي مع بعض التعديلات الضرورية */
+.dcg-container {
+  width: 100%;
+  min-width: auto;
+  background-color: white;
+}
+
+/* السماح للوحة التعبيرات بالظهور بشكلها الافتراضي */
+
+/* إعدادات افتراضية للوحة التعبيرات */
+
+/* إعدادات محايدة للرسم البياني */
+
+/* التأكد من أن الحاسبة تظهر باللغة الإنجليزية حتى في الواجهة العربية */
+html[dir="rtl"] .dcg-container,
+html[dir="rtl"] .dcg-calculator-api-container,
+html[dir="rtl"] .dcg-expressions-options,
+html[dir="rtl"] .dcg-exppanel,
+html[dir="rtl"] .dcg-expressionlist {
+  direction: ltr;
+  text-align: left;
+}
+
+/* السماح للمعادلات بالظهور بشكلها الافتراضي */
+
+/* السماح للأزرار والرموز بالظهور بشكلها الافتراضي */
+
+/* التأكد من أن الرموز الرياضية تظهر بشكل صحيح */
+.dcg-mq-math-mode {
+  direction: ltr;
+}
+
+/* التأكد من أن جميع عناصر الحاسبة تستخدم اتجاه LTR */
+.dcg-calculator-api-container * {
+  direction: ltr;
+}
+
+/* إصلاح لون النص في حقل الإدخال */
+.dcg-expression-tabbed-container,
+.dcg-expression-list-container {
+  color: black !important;
+}
+
+/* إظهار النص في محرر المعادلات */
+.dcg-expressionitem * {
+  color: black !important;
+  visibility: visible !important;
+}
+
+/* تلوين متغيرات المعادلة */
+.dcg-mq-editable-field .dcg-mq-root-block var {
+  color: black !important;
+}
+
+/* إعدادات أساسية لحاوية الحاسبة */
+.math-tools-container .desmos-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  direction: ltr;
+}
+
+/* إعدادات أساسية لحاوية أدوات الرياضيات */
+.math-tools-container {
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+/* إعدادات أساسية لحاوية الحاسبة */
+.dcg-calculator-api-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* إعدادات لوحة المفاتيح */
+
+/* إعدادات وضع إدخال المعادلات */
+.dcg-template-keypads {
+  direction: ltr;
+}
+
+/* الخطوط الافتراضية للمعادلات */
+
+/* زر إضافة الرسم البياني للسبورة */
+.add-graph-button {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}

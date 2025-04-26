@@ -1,0 +1,25 @@
+.calculator-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.calculator-button-container {
+  width: 100%;
+}
+
+.scientific-calculator {
+  padding: 16px;
+  margin: 16px;
+  max-width: 400px;
+}
+
+.calculator-display {
+  background-color: #f9f9f9;
+  padding: 16px;
+  border-radius: 4px;
+  text-align: right;
+  margin-bottom: 16px;
+  direction: ltr;
+}

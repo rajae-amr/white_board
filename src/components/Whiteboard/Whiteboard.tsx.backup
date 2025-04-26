@@ -1,0 +1,960 @@
+import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { Stage, Layer, Line, Rect, Circle, RegularPolygon, Text } from 'react-konva';
+import { KonvaEventObject } from 'konva/lib/Node';
+import { ToolType } from '../../App';
+import './Whiteboard.css';
+
+interface WhiteboardProps {
+  currentTool: ToolType;
+  currentColor: string;
+  lineThickness: number;
+  showGrid: boolean;
+}
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface DrawingElement {
+  id: string;
+  tool: ToolType;
+  points?: Point[];
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  radius?: number;
+  text?: string;
+  color: string;
+  strokeWidth: number;
+  isEditing?: boolean;
+}
+
+const Whiteboard = forwardRef<any, WhiteboardProps>((
+  {
+    currentTool,
+    currentColor,
+    lineThickness,
+    showGrid
+  }, ref
+) => {
+  // Refs
+  const stageRef = useRef<any>(null);
+  const layerRef = useRef<any>(null);
+  
+  // State
+  const [elements, setElements] = useState<DrawingElement[]>([]);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [currentElement, setCurrentElement] = useState<DrawingElement | null>(null);
+  const [history, setHistory] = useState<DrawingElement[][]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [stageSize, setStageSize] = useState({ width: window.innerWidth - 300, height: window.innerHeight - 120 });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [textEditingId, setTextEditingId] = useState<string | null>(null);
+  
+  // إضافة دالة getElements لتكون متاحة من خلال ref
+  useImperativeHandle(ref, () => ({
+    getElements: () => elements,
+    getStage: () => stageRef.current,
+    getHistory: () => history,
+    getHistoryIndex: () => historyIndex,
+    toDataURL: () => {
+      if (stageRef.current) {
+        return stageRef.current.toDataURL();
+      }
+      return null;
+    }
+  }));
+
+  // Generate a unique ID for each element
+  const generateId = () => Math.random().toString(36).substr(2, 9);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setStageSize({
+        width: window.innerWidth - 300, // Adjust for sidebar width
+        height: window.innerHeight - 120 // Adjust for header height
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Add current state to history when elements change
+  useEffect(() => {
+    if (elements.length > 0 && !isDrawing) {
+      const newHistory = history.slice(0, historyIndex + 1);
+      newHistory.push([...elements]);
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+    }
+  }, [elements, isDrawing]);
+
+  // Handle math equations and graph additions through custom events
+  useEffect(() => {
+    // Function to add a math equation to the whiteboard
+    const handleMathEquationAdded = (event: any) => {
+      try {
+        const equation = event.detail.equation;
+        if (equation) {
+          // Create a new element for the equation
+          const pos = { x: stageSize.width / 2, y: stageSize.height / 2 };
+          const newElement: DrawingElement = {
+            id: generateId(),
+            tool: 'math',
+            x: pos.x,
+            y: pos.y,
+            text: equation,
+            color: currentColor,
+            strokeWidth: lineThickness,
+          };
+          
+          // Add the new element to the whiteboard
+          setElements(prevElements => [...prevElements, newElement]);
+        }
+      } catch (error) {
+        console.error('Error adding math equation to whiteboard:', error);
+      }
+    };
+
+    // Function to add a graph to the whiteboard
+    const handleGraphAdded = (event: any) => {
+      try {
+        const equation = event.detail.equation;
+        if (equation) {
+          // Create a new element for the graph
+          const pos = { x: stageSize.width / 2, y: stageSize.height / 2 };
+          const newElement: DrawingElement = {
+            id: generateId(),
+            tool: 'graph',
+            x: pos.x,
+            y: pos.y,
+            text: equation,
+            color: currentColor,
+            strokeWidth: lineThickness,
+          };
+          
+          // Add the new element to the whiteboard
+          setElements(prevElements => [...prevElements, newElement]);
+        }
+      } catch (error) {
+        console.error('Error adding graph to whiteboard:', error);
+      }
+    };
+
+    // Listen for custom events
+    document.addEventListener('graphEquationAdded', handleGraphAdded);
+    document.addEventListener('addGraphToWhiteboard', handleGraphAdded);
+    document.addEventListener('mathEquationAdded', handleMathEquationAdded);
+
+    // Also check localStorage for backward compatibility
+    const checkForNewEquations = () => {
+      try {
+        // Check for math equations
+        const mathEquationsString = localStorage.getItem('mathEquations');
+        if (mathEquationsString) {
+          const mathEquations = JSON.parse(mathEquationsString);
+          if (Array.isArray(mathEquations) && mathEquations.length > 0) {
+            // Get the last equation and add it to the whiteboard
+            const lastEquation = mathEquations.pop();
+            
+            // Create a new element for the equation
+            const pos = { x: stageSize.width / 2, y: stageSize.height / 2 };
+            const newElement: DrawingElement = {
+              id: generateId(),
+              tool: 'math',
+              x: pos.x,
+              y: pos.y,
+              text: lastEquation,
+              color: currentColor,
+              strokeWidth: lineThickness,
+            };
+            
+            // Add the new element to the whiteboard
+            setElements(prevElements => [...prevElements, newElement]);
+            
+            // Update localStorage to remove the used equation
+            localStorage.setItem('mathEquations', JSON.stringify(mathEquations));
+          }
+        }
+
+        // Check for graph equations
+        const graphEquationsString = localStorage.getItem('graphEquations');
+        if (graphEquationsString) {
+          const graphEquations = JSON.parse(graphEquationsString);
+          if (Array.isArray(graphEquations) && graphEquations.length > 0) {
+            // Get the last equation and add it to the whiteboard
+            const lastEquation = graphEquations.pop();
+            
+            // Create a new element for the graph
+            const pos = { x: stageSize.width / 2, y: stageSize.height / 2 };
+            const newElement: DrawingElement = {
+              id: generateId(),
+              tool: 'graph',
+              x: pos.x,
+              y: pos.y,
+              text: lastEquation,
+              color: currentColor,
+              strokeWidth: lineThickness,
+            };
+            
+            // Add the new element to the whiteboard
+            setElements(prevElements => [...prevElements, newElement]);
+            
+            // Update localStorage to remove the used equation
+            localStorage.setItem('graphEquations', JSON.stringify(graphEquations));
+          }
+        }
+      } catch (error) {
+        console.error('Error checking for new equations:', error);
+      }
+    };
+
+    // Check every second for new equations in localStorage
+    const intervalId = setInterval(checkForNewEquations, 1000);
+    
+    // Cleanup function
+    return () => {
+      document.removeEventListener('graphEquationAdded', handleGraphAdded);
+      document.removeEventListener('addGraphToWhiteboard', handleGraphAdded);
+      document.removeEventListener('mathEquationAdded', handleMathEquationAdded);
+      clearInterval(intervalId);
+    };
+  }, [currentColor, lineThickness, stageSize]);
+
+  // Handle mouse down event
+  const handleMouseDown = (e: KonvaEventObject<MouseEvent>) => {
+    if (currentTool === 'select') return;
+    
+    const pos = e.target.getStage()?.getPointerPosition() || { x: 0, y: 0 };
+    setIsDrawing(true);
+    
+    const newElement: DrawingElement = {
+      id: generateId(),
+      tool: currentTool,
+      color: currentTool === 'eraser' ? '#ffffff' : currentColor, // White color for eraser
+      strokeWidth: currentTool === 'eraser' ? lineThickness * 2 : lineThickness, // Make eraser thicker
+    };
+    
+    switch (currentTool) {
+      case 'pen':
+      case 'eraser':
+        newElement.points = [{ x: pos.x, y: pos.y }];
+        // For eraser, set special property to indicate it's an eraser
+        if (currentTool === 'eraser') {
+          newElement.tool = 'eraser'; // Make sure it's explicitly marked as eraser
+        }
+        break;
+      case 'line':
+        newElement.points = [{ x: pos.x, y: pos.y }, { x: pos.x, y: pos.y }];
+        break;
+      case 'rect':
+        newElement.x = pos.x;
+        newElement.y = pos.y;
+        newElement.width = 0;
+        newElement.height = 0;
+        break;
+      case 'circle':
+        newElement.x = pos.x;
+        newElement.y = pos.y;
+        newElement.radius = 0;
+        break;
+      case 'triangle':
+        newElement.x = pos.x;
+        newElement.y = pos.y;
+        newElement.radius = 0;
+        break;
+      case 'text':
+        newElement.x = pos.x;
+        newElement.y = pos.y;
+        newElement.text = 'انقر لتعديل النص';
+        break;
+      case 'graph':
+        newElement.x = pos.x;
+        newElement.y = pos.y;
+        newElement.text = 'y = x^2'; // Default equation
+        break;
+      default:
+        break;
+    }
+    
+    setCurrentElement(newElement);
+    setElements([...elements, newElement]);
+  };
+
+  // Handle mouse move event
+  const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
+    if (!isDrawing || !currentElement) return;
+    
+    const stage = e.target.getStage();
+    const point = stage?.getPointerPosition() || { x: 0, y: 0 };
+    
+    // Update the current element based on the tool
+    const updatedElements = [...elements];
+    const index = updatedElements.findIndex(el => el.id === currentElement.id);
+    
+    if (index === -1) return;
+    
+    switch (currentElement.tool) {
+      case 'pen':
+      case 'eraser':
+        updatedElements[index].points = [
+          ...(updatedElements[index].points || []),
+          { x: point.x, y: point.y }
+        ];
+        break;
+      case 'line':
+        {
+          // Create a safer approach with type guards
+          const element = updatedElements[index];
+          const pointsArray = element.points;
+          
+          // Check if points exists and has at least 2 elements
+          if (pointsArray && Array.isArray(pointsArray) && pointsArray.length >= 2) {
+            // Create a new array to avoid mutation issues
+            const newPoints = [...pointsArray];
+            newPoints[1] = { x: point.x, y: point.y };
+            element.points = newPoints;
+          }
+        }
+        break;
+      case 'rect':
+        {
+          // Create a safer approach with type guards
+          const element = updatedElements[index];
+          
+          // Check if x and y are defined
+          if (typeof element.x === 'number' && typeof element.y === 'number') {
+            const width = point.x - element.x;
+            const height = point.y - element.y;
+            element.width = width;
+            element.height = height;
+          }
+        }
+        break;
+      case 'circle':
+        {
+          // Create a safer approach with type guards
+          const element = updatedElements[index];
+          
+          // Check if x and y are defined
+          if (typeof element.x === 'number' && typeof element.y === 'number') {
+            const dx = point.x - element.x;
+            const dy = point.y - element.y;
+            element.radius = Math.sqrt(dx * dx + dy * dy);
+          }
+        }
+        break;
+      case 'triangle':
+        {
+          // Create a safer approach with type guards
+          const element = updatedElements[index];
+          
+          // Check if x and y are defined
+          if (typeof element.x === 'number' && typeof element.y === 'number') {
+            const dx = point.x - element.x;
+            const dy = point.y - element.y;
+            element.radius = Math.sqrt(dx * dx + dy * dy);
+          }
+        }
+        break;
+      default:
+        break;
+    }
+    
+    setElements(updatedElements);
+    setCurrentElement(updatedElements[index]);
+  };
+
+  // Handle mouse up event
+  const handleMouseUp = () => {
+    setIsDrawing(false);
+    setCurrentElement(null);
+  };
+
+  // Undo function
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+      setElements(history[historyIndex - 1]);
+    } else if (historyIndex === 0) {
+      setHistoryIndex(-1);
+      setElements([]);
+    }
+  };
+
+  // Redo function
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // إذا كان هناك نص قيد التحرير
+      if (textEditingId) {
+        if (e.key === 'Escape') {
+          // إلغاء وضع التحرير عند الضغط على ESC
+          setTextEditingId(null);
+        } else if (e.key === 'Enter' && !e.shiftKey) {
+          // إنهاء التحرير عند الضغط على Enter
+          setTextEditingId(null);
+        }
+        return;
+      }
+      
+      // وظائف التراجع والإعادة
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        handleUndo();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === 'y') {
+        handleRedo();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [history, historyIndex, textEditingId]);
+  
+  // معالجة تغيير النص
+  const handleTextChange = (e: any) => {
+    if (!textEditingId) return;
+    
+    const updatedElements = [...elements];
+    const index = updatedElements.findIndex(el => el.id === textEditingId);
+    
+    if (index !== -1) {
+      updatedElements[index].text = e.target.value;
+      setElements(updatedElements);
+    }
+  };
+  
+  // مكون محرر النص
+  const TextEditor = () => {
+    if (!textEditingId) return null;
+    
+    const textElement = elements.find(el => el.id === textEditingId);
+    if (!textElement) return null;
+    
+    const textNodeRef = layerRef.current?.findOne(`#${textEditingId}`);
+    const position = textNodeRef?.getAbsolutePosition() || { x: textElement.x || 0, y: textElement.y || 0 };
+    
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: position.y + 'px',
+          left: position.x + 'px',
+          zIndex: 1000,
+        }}
+      >
+        <textarea
+          autoFocus
+          defaultValue={textElement.text || ''}
+          onChange={handleTextChange}
+          onBlur={() => setTextEditingId(null)}
+          style={{
+            width: '200px',
+            minHeight: '50px',
+            backgroundColor: 'white',
+            border: '1px solid #0096FF',
+            padding: '5px',
+            fontFamily: 'Cairo, Arial',
+            fontSize: '18px',
+            color: textElement.color,
+            direction: 'rtl',
+            textAlign: 'right',
+          }}
+        />
+      </div>
+    );
+  };
+
+  // Render grid lines if enabled
+  const renderGrid = () => {
+    if (!showGrid) return null;
+    
+    const gridSize = 20;
+    const gridLines = [];
+    
+    // Vertical lines
+    for (let i = 0; i <= stageSize.width; i += gridSize) {
+      gridLines.push(
+        <Line
+          key={`v-${i}`}
+          points={[i, 0, i, stageSize.height]}
+          stroke="#ddd"
+          strokeWidth={0.5}
+        />
+      );
+    }
+    
+    // Horizontal lines
+    for (let i = 0; i <= stageSize.height; i += gridSize) {
+      gridLines.push(
+        <Line
+          key={`h-${i}`}
+          points={[0, i, stageSize.width, i]}
+          stroke="#ddd"
+          strokeWidth={0.5}
+        />
+      );
+    }
+    
+    return gridLines;
+  };
+  
+  // Render all drawing elements
+  const renderElements = () => {
+    return elements.map((element) => {
+      const { id, tool, color, strokeWidth } = element;
+      
+      switch (tool) {
+        case 'pen':
+          return (
+            <Line
+              key={id}
+              points={element.points?.flatMap(p => [p.x, p.y]) || []}
+              stroke={color}
+              strokeWidth={strokeWidth}
+              tension={0.5}
+              lineCap="round"
+              lineJoin="round"
+            />
+          );
+        case 'eraser':
+          return (
+            <Line
+              key={id}
+              points={element.points?.flatMap(p => [p.x, p.y]) || []}
+              stroke="#ffffff"
+              strokeWidth={strokeWidth * 2} // Make eraser thicker
+              tension={0.5}
+              lineCap="round"
+              lineJoin="round"
+              globalCompositeOperation="destination-out" // This is the key for eraser functionality
+            />
+          );
+        case 'line':
+          return (
+            <Line
+              key={id}
+              points={element.points?.flatMap(p => [p.x, p.y]) || []}
+              stroke={color}
+              strokeWidth={strokeWidth}
+              lineCap="round"
+            />
+          );
+        case 'rect':
+          return (
+            <Rect
+              key={id}
+              x={element.x || 0}
+              y={element.y || 0}
+              width={element.width || 0}
+              height={element.height || 0}
+              stroke={color}
+              strokeWidth={strokeWidth}
+              fill="transparent"
+            />
+          );
+        case 'circle':
+          return (
+            <Circle
+              key={id}
+              x={element.x || 0}
+              y={element.y || 0}
+              radius={element.radius || 0}
+              stroke={color}
+              strokeWidth={strokeWidth}
+              fill="transparent"
+            />
+          );
+        case 'triangle':
+          return (
+            <RegularPolygon
+              key={id}
+              x={element.x || 0}
+              y={element.y || 0}
+              sides={3}
+              radius={element.radius || 0}
+              stroke={color}
+              strokeWidth={strokeWidth}
+              fill="transparent"
+              rotation={180}
+              draggable
+            />
+          );
+        case 'text':
+          return (
+            <Text
+              key={id}
+              id={id}
+              x={element.x || 0}
+              y={element.y || 0}
+              text={element.text || ''}
+              fontSize={18}
+              fill={color}
+              fontFamily="Cairo, Arial"
+              align="right"
+              draggable
+              onClick={(e) => {
+                // تحديد النص عند النقر عليه
+                setSelectedId(id);
+                e.cancelBubble = true;
+              }}
+              onDblClick={(e) => {
+                // تفعيل تحرير النص عند النقر المزدوج
+                setTextEditingId(id);
+                e.cancelBubble = true;
+              }}
+              onDblTap={(e) => {
+                // لدعم الأجهزة اللوحية
+                setTextEditingId(id);
+                e.cancelBubble = true;
+              }}
+              // تطبيق نمط مختلف عند التحديد
+              stroke={selectedId === id ? '#0096FF' : undefined}
+              strokeWidth={selectedId === id ? 1 : 0}
+              strokeScaleEnabled={false}
+              perfectDrawEnabled={false}
+            />
+          );
+        case 'math':
+          return (
+            <Text
+              key={id}
+              id={id}
+              x={element.x || 0}
+              y={element.y || 0}
+              text={element.text || ''}
+              fontSize={16}
+              fill={color}
+              fontFamily="Cambria, Arial"
+              align="center"
+              draggable
+              stroke="white"
+              strokeWidth={5}
+              strokeEnabled={true}
+              onClick={(e) => {
+                setSelectedId(id);
+                e.cancelBubble = true;
+              }}
+              onDblClick={(e) => {
+                setTextEditingId(id);
+                e.cancelBubble = true;
+              }}
+            />
+          );
+        case 'graph':
+          return (
+            <React.Fragment key={id}>
+              {/* Graph container */}
+              <Rect
+                x={(element.x || 0) - 100}
+                y={(element.y || 0) - 75}
+                width={200}
+                height={150}
+                fill="#f8f8f8"
+                stroke={color}
+                strokeWidth={1}
+                cornerRadius={5}
+                draggable
+              />
+              
+              {/* X-axis */}
+              <Line
+                points={[
+                  (element.x || 0) - 90, (element.y || 0),
+                  (element.x || 0) + 90, (element.y || 0)
+                ]}
+                stroke="#333"
+                strokeWidth={1}
+                draggable
+              />
+              
+              {/* Y-axis */}
+              <Line
+                points={[
+                  (element.x || 0), (element.y || 0) - 65,
+                  (element.x || 0), (element.y || 0) + 65
+                ]}
+                stroke="#333"
+                strokeWidth={1}
+                draggable
+              />
+              
+              {/* Function curve - simplified curve representation */}
+              <Line
+                points={[
+                  (element.x || 0) - 90, (element.y || 0),
+                  (element.x || 0) - 60, (element.y || 0) - 30,
+                  (element.x || 0) - 30, (element.y || 0) - 50,
+                  (element.x || 0), (element.y || 0) - 60,
+                  (element.x || 0) + 30, (element.y || 0) - 50,
+                  (element.x || 0) + 60, (element.y || 0) - 30,
+                  (element.x || 0) + 90, (element.y || 0)
+                ]}
+                stroke="#1976d2"
+                strokeWidth={2}
+                tension={0.5}
+                draggable
+              />
+              
+              {/* Equation text */}
+              <Text
+                x={(element.x || 0) - 90}
+                y={(element.y || 0) - 65}
+                text={element.text || ''}
+                fontSize={14}
+                fill={color}
+                fontFamily="Cambria, Arial"
+                align="left"
+                draggable
+              />
+            </React.Fragment>
+          );
+        default:
+          return null;
+      }
+  return (
+    <Line
+      key={id}
+      points={element.points?.flatMap(p => [p.x, p.y]) || []}
+      stroke="#ffffff"
+      strokeWidth={strokeWidth * 2} // Make eraser thicker
+      tension={0.5}
+      lineCap="round"
+      lineJoin="round"
+      globalCompositeOperation="destination-out" // This is the key for eraser functionality
+    />
+  );
+case 'line':
+  return (
+    <Line
+      key={id}
+      points={element.points?.flatMap(p => [p.x, p.y]) || []}
+      stroke={color}
+      strokeWidth={strokeWidth}
+      lineCap="round"
+    />
+  );
+case 'rect':
+  return (
+    <Rect
+      key={id}
+      x={element.x || 0}
+      y={element.y || 0}
+      width={element.width || 0}
+      height={element.height || 0}
+      stroke={color}
+      strokeWidth={strokeWidth}
+      fill="transparent"
+    />
+  );
+case 'circle':
+  return (
+    <Circle
+      key={id}
+      x={element.x || 0}
+      y={element.y || 0}
+      radius={element.radius || 0}
+      stroke={color}
+      strokeWidth={strokeWidth}
+      fill="transparent"
+    />
+  );
+case 'triangle':
+  return (
+    <RegularPolygon
+      key={id}
+      x={element.x || 0}
+      y={element.y || 0}
+      sides={3}
+      radius={element.radius || 0}
+      stroke={color}
+      strokeWidth={strokeWidth}
+      fill="transparent"
+      rotation={180}
+      draggable
+    />
+  );
+case 'text':
+  return (
+    <Text
+      key={id}
+      id={id}
+      x={element.x || 0}
+      y={element.y || 0}
+      text={element.text || ''}
+      fontSize={18}
+      fill={color}
+      fontFamily="Cairo, Arial"
+      align="right"
+      draggable
+      onClick={(e) => {
+        // تحديد النص عند النقر عليه
+        setSelectedId(id);
+        e.cancelBubble = true;
+      }}
+      onDblClick={(e) => {
+        // تفعيل تحرير النص عند النقر المزدوج
+        setTextEditingId(id);
+        e.cancelBubble = true;
+      }}
+      onDblTap={(e) => {
+        // لدعم الأجهزة اللوحية
+        setTextEditingId(id);
+        e.cancelBubble = true;
+      }}
+      // تطبيق نمط مختلف عند التحديد
+      stroke={selectedId === id ? '#0096FF' : undefined}
+      strokeWidth={selectedId === id ? 1 : 0}
+      strokeScaleEnabled={false}
+      perfectDrawEnabled={false}
+    />
+  );
+case 'math':
+  return (
+    <Text
+      key={id}
+      id={id}
+      x={element.x || 0}
+      y={element.y || 0}
+      text={element.text || ''}
+      fontSize={16}
+      fill={color}
+      fontFamily="Cambria, Arial"
+      align="center"
+      draggable
+      stroke="white"
+      strokeWidth={5}
+      strokeEnabled={true}
+      onClick={(e) => {
+        setSelectedId(id);
+        e.cancelBubble = true;
+      }}
+      onDblClick={(e) => {
+        setTextEditingId(id);
+        e.cancelBubble = true;
+      }}
+    />
+  );
+case 'graph':
+  return (
+    <React.Fragment key={id}>
+      {/* Graph container */}
+      <Rect
+        x={(element.x || 0) - 100}
+        y={(element.y || 0) - 75}
+        width={200}
+        height={150}
+        fill="#f8f8f8"
+        stroke={color}
+        strokeWidth={1}
+        cornerRadius={5}
+        draggable
+      />
+      
+      {/* X-axis */}
+      <Line
+        points={[
+          (element.x || 0) - 90, (element.y || 0),
+          (element.x || 0) + 90, (element.y || 0)
+        ]}
+        stroke="#333"
+        strokeWidth={1}
+        draggable
+      />
+      
+      {/* Y-axis */}
+      <Line
+        points={[
+          (element.x || 0), (element.y || 0) - 65,
+          (element.x || 0), (element.y || 0) + 65
+        ]}
+        stroke="#333"
+        strokeWidth={1}
+        draggable
+      />
+      
+      {/* Function curve - simplified curve representation */}
+      <Line
+        points={[
+          (element.x || 0) - 90, (element.y || 0),
+          (element.x || 0) - 60, (element.y || 0) - 30,
+          (element.x || 0) - 30, (element.y || 0) - 50,
+          (element.x || 0), (element.y || 0) - 60,
+          (element.x || 0) + 30, (element.y || 0) - 50,
+          (element.x || 0) + 60, (element.y || 0) - 30,
+          (element.x || 0) + 90, (element.y || 0)
+        ]}
+        stroke="#1976d2"
+        strokeWidth={2}
+        tension={0.5}
+        draggable
+      />
+      
+      {/* Equation text */}
+      <Text
+        x={(element.x || 0) - 90}
+        y={(element.y || 0) - 65}
+        text={element.text || ''}
+        fontSize={14}
+        fill={color}
+        fontFamily="Cambria, Arial"
+        align="left"
+        draggable
+      />
+    </React.Fragment>
+  );
+default:
+  return null;
+}
+});
+
+return (
+<div className="whiteboard-container" tabIndex={0}>
+  {/* محرر النصوص */}
+  {textEditingId && <TextEditor />}
+  
+  <Stage
+    width={stageSize.width}
+    height={stageSize.height}
+    onMouseDown={handleMouseDown}
+    onMouseMove={handleMouseMove}
+    onMouseUp={handleMouseUp}
+    onClick={() => {
+      setSelectedId(null);
+    }}
+    onTouchStart={handleMouseDown}
+    onTouchMove={handleMouseMove}
+    onTouchEnd={handleMouseUp}
+    ref={stageRef}
+  >
+    <Layer ref={layerRef}>
+      {/* Background */}
+      <Rect
+        x={0}
+        y={0}
+        width={stageSize.width}
+        height={stageSize.height}
+        fill="#FFFFFF"
+      />
+      
+      {/* Grid (if enabled) */}
+      {showGrid && renderGrid()}
+      
+      {/* Drawing elements */}
+      {renderElements()}
+    </Layer>
+  </Stage>
+</div>
+);
+    </div>
+  );
+});
+
+export default Whiteboard;

@@ -1,0 +1,145 @@
+.page-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.page-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 5px;
+  padding-bottom: 5px;
+}
+
+.page-tab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 120px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.page-tab.active {
+  background-color: #e6f7ff;
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.page-tab-content {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.page-tab input {
+  width: 80px;
+  border: none;
+  border-bottom: 1px solid #1890ff;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  padding: 2px;
+}
+
+.page-actions {
+  display: flex;
+  gap: 5px;
+  margin-right: 5px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.page-tab:hover .page-actions {
+  opacity: 1;
+}
+
+.rename-button,
+.delete-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px;
+  border-radius: 2px;
+}
+
+.rename-button:hover {
+  background-color: #f9f9f9;
+}
+
+.delete-button:hover {
+  background-color: #fff1f0;
+}
+
+.add-page-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 36px;
+  background-color: #f0f0f0;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  color: #1890ff;
+}
+
+.add-page-button:hover {
+  background-color: #e6f7ff;
+  border-color: #1890ff;
+}
+
+.page-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.nav-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.nav-button:hover:not(:disabled) {
+  background-color: #e6f7ff;
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.page-indicator {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  direction: ltr;
+}

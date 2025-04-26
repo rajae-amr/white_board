@@ -1,0 +1,25 @@
+.header {
+  direction: rtl;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.recording {
+  color: #f44336 !important;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
